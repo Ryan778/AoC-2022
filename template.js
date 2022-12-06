@@ -24,7 +24,7 @@ exports.silverStar = function(inpArr, inpStr) {
     let v = inp[i];
     // v = v.map(r => parseInt(r));
 
-    
+      
   }
 
   return c;

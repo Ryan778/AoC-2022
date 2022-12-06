@@ -23,6 +23,17 @@ function printBenchmark(str, i) {
   log(`${str} ${(times[0]*1000 + times[1]/1e6).toFixed(4).magenta} ${'ms'.magenta}`); 
 }
 
+function trim(string) {
+  // trim only removes one leading and/or trailing newline, as standard .trim() breaks certain inputs (i.e., AoC 2022 day 5)
+  if(string.slice(0, 1) === '\n') {
+    string = string.slice(1);
+  } 
+  if (string.slice(string.length - 1) === '\n') {
+    string = string.slice(0, string.length - 1);
+  }
+  return string;
+}
+
 log(`[Advent of Code]`.green.bold); 
 
 let pnum = process.argv[2] ? parseInt(process.argv[2]) : 0; 
@@ -105,7 +116,7 @@ async function fetchTestInput(day) {
   }
 
   return {
-    input: sampleInput.trim(), 
+    input: trim(sampleInput), 
     answers: [testOutput1, testOutput2]
   }
 }
@@ -119,7 +130,7 @@ async function getTestInput(day, type) {
     let rawData = fs.readFileSync(path.join('inputs', `${day}t.txt`), 'utf-8'); 
     let fl = rawData.slice(0, rawData.indexOf('\n')); // first line
     data = {
-      input: rawData.slice(rawData.indexOf('\n') + 1).trim(), 
+      input: trim(rawData.slice(rawData.indexOf('\n') + 1)), 
       answers: fl.split(';')
     }; 
     if (data.answers[1] === '<n/a>') {
@@ -135,7 +146,7 @@ async function getTestInput(day, type) {
 }
 
 async function runCode(day, input) {
-  input = input.trim(); // Remove whitespace if there is any
+  input = trim(input); // Remove whitespace if there is any
 
   let inputArr = input.split('\n'); 
   let inputArr2 = [...inputArr]; 
