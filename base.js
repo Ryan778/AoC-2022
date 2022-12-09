@@ -1,3 +1,7 @@
+// AoC Base
+// (C) 2022 Ryan Zhang
+const VERSION = '2.2'
+
 require('dotenv').config(); 
 
 const YEAR = process.env.AOC_YEAR;
@@ -8,14 +12,31 @@ const path = require('path');
 const colors = require('colors'); 
 const cheerio = require('cheerio'); 
 
-const benchmark = process.argv[3] === '1'; 
+
+const flags = {
+  benchmark: process.argv.indexOf('-b') !== -1,
+  silenceLog: process.argv.indexOf('-q') !== -1,
+  testInputOnly: process.argv.indexOf('-t') !== -1,
+  help: process.argv.indexOf('-?') !== -1 || process.argv.indexOf('--help') !== -1,
+}
+
+if (flags.help) {
+  console.log(`Usage: node base.js [DAY] [OPTION...]\nbase.js is a custom helper script for Advent of Code.\n\nWith no DAY, or when DAY is 0, program will default to current day.\n\nOptions:\n\t-b\t\tBenchmarking mode, adds performance timers to code execution\n\t-q\t\tQuiet mode, supresses all console.log calls within a particular day's script\n\t-t\t\tTest input only, runs day's script only against test input\n\t-?, --help\tHelp, shows this help message`);
+  process.exit(0);
+}
+
 let benchmarkTimes = []; 
 
-const silenceLog = process.argv.indexOf('-q') !== -1;
 const log = console.log;
-if (silenceLog) {
-  console.log(`[WARN] -q flag passed, silencing logs`.yellow)
+
+log(`[Advent of Code]`.green.bold + ` v${VERSION}`.green); 
+
+if (flags.silenceLog) {
+  console.log(`[WARN] -q flag passed, silencing logs`.yellow);
   console.log = () => {};
+}
+if (flags.testInputOnly) {
+  console.log(`[WARN] -t flag passed, only running test inputs`.yellow);
 }
 
 function printBenchmark(str, i) {
@@ -33,8 +54,6 @@ function trim(string) {
   }
   return string;
 }
-
-log(`[Advent of Code]`.green.bold); 
 
 let pnum = process.argv[2] ? parseInt(process.argv[2]) : 0; 
 
@@ -158,13 +177,16 @@ async function runCode(day, input) {
   let script = require(`./${day}.js`); 
   log(`<Task 1>`.cyan.underline); 
   
-  if (benchmark) benchmarkTimes[0] = process.hrtime(); 
-  let silver = script.silverStar(inputArr, input); 
-  if (benchmark) benchmarkTimes[0] = process.hrtime(benchmarkTimes[0]); 
+  let silver = null;
+  if (!flags.testInputOnly) {
+    if (flags.benchmark) benchmarkTimes[0] = process.hrtime(); 
+    silver = script.silverStar(inputArr, input); 
+    if (flags.benchmark) benchmarkTimes[0] = process.hrtime(benchmarkTimes[0]); 
+  }
 
   let testInput = await getTestInput(day, 0); 
 
-  if (typeof silver === 'string' || typeof silver === 'number') {
+  if (typeof silver === 'string' || typeof silver === 'number' || flags.testInputOnly) {
     let testOutput = script.silverStar(testInput.input.split('\n'), testInput.input); 
 
     log(`${'Output:'.cyan} ${(typeof silver === 'string' || typeof silver === 'number') ? silver.toString().magenta : 'null'}`); 
@@ -181,11 +203,14 @@ async function runCode(day, input) {
   
   log(`<Task 2>`.cyan.underline); 
   
-  if (benchmark) benchmarkTimes[1] = process.hrtime(); 
-  let gold = script.goldStar(inputArr2, input); 
-  if (benchmark) benchmarkTimes[1] = process.hrtime(benchmarkTimes[1]); 
+  let gold = null;
+  if (!flags.testInputOnly) {
+    if (flags.benchmark) benchmarkTimes[1] = process.hrtime(); 
+    gold = script.goldStar(inputArr2, input); 
+    if (flags.benchmark) benchmarkTimes[1] = process.hrtime(benchmarkTimes[1]); 
+  }
 
-  if (typeof gold === 'string' || typeof gold === 'number') {
+  if (typeof gold === 'string' || typeof gold === 'number' || flags.testInputOnly) {
     if(testInput.answers[1] === false) {
       testInput = await getTestInput(day, 1); 
     }
@@ -203,7 +228,7 @@ async function runCode(day, input) {
     log(`${'[OK]'.yellow} ${'Test Case Skipped'.cyan} (No Output)`);
   }
 
-  if (benchmark) {
+  if (flags.benchmark) {
     log('\n[Benchmark]'.yellow);
     printBenchmark('Part 1 (Silver)', 0);
     printBenchmark('Part 2 (Gold)  ', 1);

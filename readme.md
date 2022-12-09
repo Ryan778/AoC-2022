@@ -1,4 +1,4 @@
-# Advent of Code Solutions (2021)
+# Advent of Code Solutions (2022)
 
 &copy; 2021 Ryan Zhang
 

@@ -1,0 +1,11 @@
+v2.0 - 12.1.2022
+ - New: Added a "-q" flag to run a specific day while supressing all console.log statements withins aid day
+
+v2.1 - 12.5.2022
+ - Enhancement: base.js no longer trims start/end whitespace due to some inputs (i.e., 2022 day 5) depending on it. It now only removes an extraneous, empty start/end newline if one exists.
+
+v2.2 - 12.8.2022
+ - New: Added a "-t" flag to only run code against test inputs (no real inputs)
+ - New: Added a "-?" / "--help" flag to display help
+ - Enhancement: Replaced "setting the third argument to 1" with a "-b" flag to enable benchmarking
+ - Enhancement: Added versioning to base.js (and retroactively wrote a changelog back to 2.0, representing the start of AoC 2022)
