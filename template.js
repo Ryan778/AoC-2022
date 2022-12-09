@@ -15,10 +15,10 @@ exports.silverStar = function(inpArr, inpStr) {
   // let inp = inpArr.join('\n').split('\n\n').map(r=>r.split('\n').map(r=>parseInt(r))); // [[1,2,3],[4,5,6],...]
   let c = 0;
 
-  let m = new Map();
-  let s = new Set();
-  let o = {};
-  let a = [];
+  // let m = new Map();
+  // let s = new Set();
+  // let o = {};
+  // let a = [];
   
   for (let i = 0; i < inp.length; i++) {
     let v = inp[i];

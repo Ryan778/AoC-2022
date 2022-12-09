@@ -4,5 +4,4 @@ let i = 'pnnfhnhshrhmhwwmwzmznmnwmwfmfhfjfcjjtgtbggpdgdjjbjrjsjpjrrmddmgmpmddrhd
 // let o=4;while(1){o++;if(new Set(i.split('').slice(o-4,o)).size>3)break}o
 // let o=4;while(new Set(i.split('').slice(++o-4,o)).size<4);o
 // o=0;while(new Set(i.slice(o++,o+4)).size<4);o+3
-// o=0;while(new Set(i.substr(o++,4)).size<4);o+3
-console.log(o);
+o=0;while(new Set(i.substr(o++,4)).size<4);o+3
