@@ -83,7 +83,8 @@ async function fetchInput(day) {
   let resp = await fetch(`https://adventofcode.com/${YEAR}/day/${day}/input`, {
     "headers": {
       "cache-control": "max-age=0",
-      "cookie": `session=${process.env.AOC_COOKIE}`
+      "cookie": `session=${process.env.AOC_COOKIE}`,
+      "user-agent": `${process.env.AOC_UA}`
     },
     "body": null,
     "method": "GET"
@@ -101,11 +102,13 @@ async function fetchInput(day) {
 }
 
 async function fetchTestInput(day) {
+  debugger;
   log(`Fetching... (https://adventofcode.com/${YEAR}/day/${day})`)
   let resp = await fetch(`https://adventofcode.com/${YEAR}/day/${day}`, {
     "headers": {
       "cache-control": "max-age=0",
-      "cookie": `session=${process.env.AOC_COOKIE}`
+      "cookie": `session=${process.env.AOC_COOKIE}`,
+      "user-agent": `${process.env.AOC_UA}`
     },
     "body": null,
     "method": "GET"
@@ -125,8 +128,32 @@ async function fetchTestInput(day) {
     p2 = $('article.day-desc').last(); 
   } 
   let codeBlocks1 = cheerio.load(p1.html())('code'); 
-  // let sampleInput = codeBlocks1.first().text(); 
-  let sampleInput = cheerio.load(p1.html())('pre code').first().text();
+  let sampleInput = '<failed to find>';
+
+  try {
+    // Attempt to intelligently find the correct sample input code block
+    let allCodeBlocks = cheerio.load(p1.html())('pre code').toArray().map(r => r.children[0].data);
+    let exampleInd = p1.html().toLowerCase().indexOf('for example');
+
+    if (exampleInd === -1) {
+      // Fallback if "for example" doesn't exist
+      sampleInput = allCodeBlocks[0];
+    } else {
+      // Look for the keyword "for example", and take the first code block after that keyword
+      let codeBlockInds = allCodeBlocks.map(r => p1.html().indexOf(r));
+      let mostLikelyCodeBlock = codeBlockInds.findIndex(r => r > exampleInd);
+      if (mostLikelyCodeBlock !== -1) {
+        sampleInput = allCodeBlocks[mostLikelyCodeBlock];
+      } else {
+        // Fallback if "for example" exists but is positioned after all code blocks
+        sampleInput = allCodeBlocks[0];
+      }
+    }
+
+  } catch (err) {
+    // Fallback: Set first code block as the sample input
+    sampleInput = cheerio.load(p1.html())('pre code').first().text();
+  }
   let testOutput1 = codeBlocks1.last().text(); 
   let testOutput2 = false; 
 
@@ -140,13 +167,19 @@ async function fetchTestInput(day) {
   }
 }
 
-async function getTestInput(day, type) {
+async function getTestInput(day, type, force=false) {
   let data; 
-  if (!fs.existsSync(path.join('inputs', `${day}t.txt`))) {
+  if (!fs.existsSync(path.join('inputs', `${day}t.txt`)) || force) {
     data = await fetchTestInput(day); 
     fs.writeFileSync(path.join('inputs', `${day}t.txt`), `${data.answers[0]};${data.answers[1]?data.answers[1]:'<n/a>'}\n${data.input}`, 'utf-8'); 
   } else {
     let rawData = fs.readFileSync(path.join('inputs', `${day}t.txt`), 'utf-8'); 
+
+    if (rawData.length === 0) {
+      // Force refresh if file is empty
+      return getTestInput(day, type, true); 
+    }
+
     let fl = rawData.slice(0, rawData.indexOf('\n')); // first line
     data = {
       input: trim(rawData.slice(rawData.indexOf('\n') + 1)), 
@@ -155,7 +188,7 @@ async function getTestInput(day, type) {
     if (data.answers[1] === '<n/a>') {
       if (type === 1) {
         data = await fetchTestInput(day); 
-        fs.writeFileSync(path.join('inputs', `${day}t.txt`), `${data.answers[0]};${data.answers[1]?data.answers[1]:'<n/a>'}\n${data.input}`, 'utf-8'); 
+        fs.writeFileSync(path.join('inputs', `${day}t.txt`), `${data.answers[0]};${data.answers[1]?data.answers[1]:'<n/a>'}\n${rawData.slice(rawData.indexOf('\n')+1)}`, 'utf-8'); 
       } else {
         data.answers[1] = false; 
       }
@@ -191,7 +224,7 @@ async function runCode(day, input) {
 
     log(`${'Output:'.cyan} ${(typeof silver === 'string' || typeof silver === 'number') ? silver.toString().magenta : 'null'}`); 
 
-    if (testOutput.toString() === testInput.answers[0]) {
+    if (typeof testOutput?.toString !== 'undefined' && testOutput.toString() === testInput.answers[0]) {
       log(`${'[OK]'.green} ${'Test Case Passed'.cyan} ${`Expected and Got ${testOutput}`}`);
     } else {
       log(`${'[!!]'.red} ${'Test Case Failed'.cyan} ${`Expected: ${testInput.answers[0]}, Got: ${testOutput}`.red}`);
@@ -218,7 +251,7 @@ async function runCode(day, input) {
     
     log(`${'Output:'.cyan} ${(typeof gold === 'string' || typeof gold === 'number') ? gold.toString().magenta : 'null'}`); 
 
-    if (testOutput.toString() === testInput.answers[1]) {
+    if (typeof testOutput?.toString !== 'undefined' && testOutput.toString() === testInput.answers[1]) {
       log(`${'[OK]'.green} ${'Test Case Passed'.cyan} ${`Expected and Got ${testOutput}`}`);
     } else {
       log(`${'[!!]'.red} ${'Test Case Failed'.cyan} ${`Expected: ${testInput.answers[1]}, Got: ${testOutput}`.red}`);

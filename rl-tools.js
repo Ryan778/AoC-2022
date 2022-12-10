@@ -7,6 +7,7 @@ exports.array = {
    */
   new: (size=1, val) => {
     return new Array(size).fill(val); 
+    // return Array.from({length: size}, () => val);
   }, 
   /**
    * Returns the sum of all numbers in an array (or nested array). Ignores non-numerical values.
@@ -131,4 +132,8 @@ exports.number = {
     }
     return n > 1;
   }
+}
+
+exports.Node = class Node {
+  
 }
