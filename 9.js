@@ -83,7 +83,7 @@ exports.goldStar = function(inpArr, inpStr) {
   let inp = inpArr;
   let s = new Set();
 
-  let rope = rl.array.new(10, null).map(r => r = [0, 0]);
+  let rope = rl.array.new(10, [0, 0]).map(r => [0, 0]);
 
 
   function follow(j, i) {

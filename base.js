@@ -1,6 +1,6 @@
 // AoC Base
 // (C) 2022 Ryan Zhang
-const VERSION = '2.2'
+const VERSION = '2.3.1'
 
 require('dotenv').config(); 
 
@@ -46,6 +46,10 @@ function printBenchmark(str, i) {
 
 function trim(string) {
   // trim only removes one leading and/or trailing newline, as standard .trim() breaks certain inputs (i.e., AoC 2022 day 5)
+  if (typeof string !== 'string') {
+    console.log(`[WARN] trim() was given a non-string input:`.yellow, string);
+    return '';
+  }
   if(string.slice(0, 1) === '\n') {
     string = string.slice(1);
   } 
